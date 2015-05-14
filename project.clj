@@ -8,4 +8,5 @@
 
   :main ^:skip-aot clj-lspi.core 
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:plugins [[com.jakemccrary/lein-test-refresh "0.9.0"]]}})
