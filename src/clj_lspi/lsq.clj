@@ -1,7 +1,8 @@
 (ns clj-lspi.lsq
   (:refer-clojure :exclude [* - + == /])
   (:require
-    [clojure.core.matrix :refer [matrix inverse mmul outer-product]]))
+    [clojure.core.matrix :refer :all]
+    [clojure.core.matrix.operators :refer :all]))
 
 (def training-data 
   [{:old-state 1 :new-state 4 :action 1 :reward 0}
