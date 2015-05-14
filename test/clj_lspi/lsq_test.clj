@@ -4,7 +4,7 @@
     [clojure.test :refer [deftest testing is]]
     [clojure.core.matrix :refer :all]
     [clojure.core.matrix.operators :refer :all]
-    [clj-lspi.lsq :refer [update-b]]))
+    [clj-lspi.lsq :refer :all]))
 
 (def training-data 
   [{:old-state 1 :new-state 4 :action 1 :reward 0}
@@ -21,6 +21,10 @@
    
    (fn [[state action]]
      1)])
+
+(defn test-actions
+  [state]
+  [0 1 2])
 
 (deftest b-update-zero-reward
   (testing "b-update with zero reward"
@@ -44,4 +48,28 @@
                        sample)
              (+ input
                 feature-values))))))
+
+(deftest pick-best-action
+  (testing "Pick the best action"
+    (let [state                 1
+          weights               [0.333 0.333 0.333]
+          actions               (test-actions state)
+          state-action-data     (map (fn [action] 
+                                       {:old-state state
+                                        :action action})
+                                     actions)
+          feat-mat              (feature-matrix features
+                                                state-action-data)
+
+
+          values                (map-indexed (fn [idx vals] [idx (reduce + vals)])
+                                             feat-mat)
+          sorted                (sort-by second > values)
+          best                  (pick-action state
+                                             features
+                                             weights
+                                             test-actions)]
+      (is (= (-> sorted first first) 
+             best)))))
+
 
