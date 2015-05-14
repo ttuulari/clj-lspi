@@ -25,14 +25,17 @@
     (matrix (map mapper feature-data))))
 
 (defn extract-rewards
+  "Rewards from training data."
   [training-data]
   (matrix (map :reward training-data)))
 
 (defn weights
+  "Solve weight vector by inversing A."
   [A b]
   (mmul (inverse A) b))
 
 (defn update-a
+  "Update a-matrix with new data sample"
   [a-matrix features policy discount sample]
   (let [extract-feature-data  (fn [elem]
                                 [(:old-state elem)
@@ -51,6 +54,7 @@
     (+ a-matrix delta)))
 
 (defn update-b
+  "Update b-vector with new data sample"
   [b-vec features sample]
   (let [extract-feature-data  (fn [elem]
                                 [(:old-state elem)
