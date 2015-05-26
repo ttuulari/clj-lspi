@@ -10,6 +10,9 @@ A Clojure library designed to ... well, try out model-free reinforcement learnin
 # Watch tests
 	$ lein test-refresh
 
+# Test coverage
+	$ lein cloverage
+
 ## License
 
 Copyright © 2015 Teemu Tuulari 
