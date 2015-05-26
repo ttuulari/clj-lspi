@@ -14,7 +14,7 @@
         mapper               (apply juxt features)]
     (matrix (map mapper feature-data))))
 
-(defn feature-transition-matrix
+(defn- feature-transition-matrix
   "Approximate feature transition matrix based on policy fn"
   [features training-data policy]
   (let [extract-feature-data (fn [elem]
@@ -24,12 +24,12 @@
         mapper               (apply juxt features)]
     (matrix (map mapper feature-data))))
 
-(defn extract-rewards
+(defn- extract-rewards
   "Rewards from training data."
   [training-data]
   (matrix (map :reward training-data)))
 
-(defn weights
+(defn- weights
   "Solve weight vector by inversing A."
   [A b]
   (mmul (inverse A) b))
