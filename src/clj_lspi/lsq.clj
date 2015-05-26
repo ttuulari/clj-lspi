@@ -14,7 +14,7 @@
         mapper               (apply juxt features)]
     (matrix (map mapper feature-data))))
 
-(defn- feature-transition-matrix
+(defn feature-transition-matrix
   "Approximate feature transition matrix based on policy fn"
   [features training-data policy]
   (let [extract-feature-data (fn [elem]
@@ -27,12 +27,28 @@
 (defn- extract-rewards
   "Rewards from training data."
   [training-data]
-  (matrix (map :reward training-data)))
+  (-> (map :reward training-data)
+      matrix
+      transpose))
 
 (defn- weights
   "Solve weight vector by inversing A."
   [A b]
   (mmul (inverse A) b))
+
+(defn solve-weights
+  "Solve the weight vector."
+  [features training-data policy discount]
+  (let [phi     (feature-matrix features training-data)
+        p-phi   (feature-transition-matrix features training-data policy)
+        phi-t   (transpose phi)
+        b       (mmul phi-t 
+                      (extract-rewards training-data))
+        a       (mmul phi-t
+                      (- phi
+                         (* discount
+                            p-phi)))]
+    (weights a b)))
 
 (defn update-a
   "Update a-matrix with new data sample"
