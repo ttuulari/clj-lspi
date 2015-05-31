@@ -65,10 +65,10 @@
           values                (map-indexed (fn [idx vals] [idx (reduce + vals)])
                                              feat-mat)
           sorted                (sort-by second > values)
-          best                  (pick-action state
-                                             features
+          best-fn               (policy-action features
                                              weights
-                                             test-actions)]
+                                             test-actions)
+          best                  (best-fn state)]
       (is (= (-> sorted first first) 
              best)))))
 

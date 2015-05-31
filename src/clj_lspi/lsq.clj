@@ -81,20 +81,35 @@
          (* (:reward sample))
          (+ b-vec))))
 
-(defn pick-action
-  "Pick the actions among (possible actions) that maximizes the state Q-value"
-  [state features weights possible-actions]
-  (let [actions               (possible-actions state)
-        state-action-data     (map (fn [action] 
-                                     {:old-state state
-                                      :action action})
-                                   actions)
+(defn policy-action
+  "Pick the actions among (possible actions) that maximizes the state argument Q-value.
+  Return policy fn"
+  [features weights possible-actions]
+  (fn [state]
+    (let [actions               (possible-actions state)
+          state-action-data     (map (fn [action] 
+                                       {:old-state state
+                                        :action action})
+                                     actions)
+          feature-values        (feature-matrix features state-action-data)
+          mult-with-weights     (fn [feat-val]
+                                  (mmul feat-val weights))
+          scores                (map mult-with-weights feature-values)
+          values                (map vector scores actions)
+          sorted                (sort-by first > values)]
+      (-> sorted first second))))
 
-        feature-values        (feature-matrix features state-action-data)
-        mult-with-weights     (fn [feat-val]
-                                (mmul feat-val weights))
-        scores                (map mult-with-weights feature-values)
-        values                (map vector scores actions)
-        sorted                (sort-by first > values)]
-    (-> sorted first second)))
+#_(defn algo
+  []
+  (update-a a-matrix
+            features
+            (policy-action features
+                           weights
+                           possible-actions)
+            discount
+            sample)
+   (update-b b-vec features sample)
 
+
+
+  )
