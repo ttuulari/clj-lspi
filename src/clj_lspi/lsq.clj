@@ -36,8 +36,7 @@
   [A b]
   (mmul (inverse A) b))
 
-(defn solve-weights
-  "Solve the weight vector."
+(defn a-and-b
   [features training-data policy discount]
   (let [phi     (feature-matrix features training-data)
         p-phi   (feature-transition-matrix features training-data policy)
@@ -48,6 +47,12 @@
                       (- phi
                          (* discount
                             p-phi)))]
+    {:a a :b b}))
+
+(defn solve-weights
+  "Solve the weight vector."
+  [features training-data policy discount]
+  (let [{:keys [a b]}  (a-and-b features training-data policy discount)]
     (weights a b)))
 
 (defn update-a
@@ -99,17 +104,26 @@
           sorted                (sort-by first > values)]
       (-> sorted first second))))
 
-#_(defn algo
-  []
-  (update-a a-matrix
-            features
-            (policy-action features
-                           weights
-                           possible-actions)
-            discount
-            sample)
-   (update-b b-vec features sample)
-
-
-
-  )
+(defn algo
+  [features training-data possible-actions discount init-weights stopping-criterion]
+  (let [{:keys [init-a init-b]}  (a-and-b features
+                                          training-data
+                                          (policy-action features
+                                                         init-weights
+                                                         possible-actions)
+                                          discount)]
+    (loop [a   init-a
+           b   init-b
+           w   init-weights]
+      (let [new-w   (weights a b)]
+        (if (< (distance w new-w) stopping-criterion)
+          new-w
+          (recur (update-a a
+                           features
+                           (policy-action features
+                                          weights
+                                          possible-actions)
+                           discount
+                           sample)
+                 (update-b b features sample)
+                 (weights a b)))))))
