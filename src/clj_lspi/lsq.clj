@@ -104,26 +104,37 @@
           sorted                (sort-by first > values)]
       (-> sorted first second))))
 
-(defn algo
+(defn initial-params
+  [features training-data possible-actions discount init-weights]
+  (let [{:keys [a b]}  (a-and-b features
+                                training-data
+                                (policy-action features
+                                               init-weights
+                                               possible-actions)
+                                discount)]
+     {:a a
+      :b b
+      :w init-weights}))
+
+#_(defn algo
   [features training-data possible-actions discount init-weights stopping-criterion]
-  (let [{:keys [init-a init-b]}  (a-and-b features
-                                          training-data
-                                          (policy-action features
-                                                         init-weights
-                                                         possible-actions)
-                                          discount)]
-    (loop [a   init-a
-           b   init-b
-           w   init-weights]
-      (let [new-w   (weights a b)]
-        (if (< (distance w new-w) stopping-criterion)
+  (let [{:keys [a b w]}  (initial-params features
+                                         training-data
+                                         possible-actions
+                                         discount
+                                         init-weights)]
+    (loop [a-mat   a
+           b-vec   b
+           w-vec   w]
+      (let [new-w   (weights a-mat b-vec)]
+        (if (< (distance w-vec new-w) stopping-criterion)
           new-w
-          (recur (update-a a
+          (recur (update-a a-mat
                            features
                            (policy-action features
                                           weights
                                           possible-actions)
                            discount
                            sample)
-                 (update-b b features sample)
-                 (weights a b)))))))
+                 (update-b b-vec features sample)
+                 (weights a-mat b-vec)))))))
