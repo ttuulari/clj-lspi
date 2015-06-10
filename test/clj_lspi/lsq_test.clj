@@ -72,42 +72,60 @@
       (is (= (-> sorted first first) 
              best)))))
 
-(deftest addition-test 
-  (testing "Testing addition"
-    (let [goal              10
-          discount          0.99
-          reward            (fn [s]
-                              (/ 1 (+ 0.01 (Math/abs (- goal s)))))
-          starting-states   (range 0 (* goal 2))
-          possible-actions  (fn [s]
-                              (cond
-                                (= goal s) [0]
-                                :else (range (* -1 (/ goal 2)) (/ goal 2))))
-          mapper            (fn [s]
-                              (let [action  (rand-nth (possible-actions s))]
-                                {:old-state s
-                                 :action    action 
-                                 :reward    (reward s)
-                                 :new-state (+ s action)}))
-          training-data     (mapv mapper starting-states) 
-          features          [(fn [[s a]]
-                               s)
-                             (fn [[s a]]
-                               (- goal s))
-                             (fn [[s a]]
-                               (if (pos? s) 1 0))
-                             (fn [[s a]]
-                               (if (pos? (- goal s)) 1 0))
-                             (fn [[s a]]
-                               (if (> goal s) 1 0))
-                             (fn [[s a]]
-                               a)]
-          f-c               (count features)
-          init-weights      (repeat f-c (/ 1 f-c))
-          start-params      (initial-params features training-data possible-actions discount init-weights)]
-      (is (matrix? (:a start-params)))
-      (is (vec? (:b start-params)))
-      (is (vec? (:w start-params))))))
+(deftest addition-test
+  (let [goal              50
+        discount          0.9
+        reward            (fn [s]
+                            (/ 1 (+ 0.01 (Math/abs (- goal s)))))
+        starting-states   (range 0 (* goal 2))
+        possible-actions  (fn [s]
+                            (cond
+                              (= goal s) [0 1 -1]
+                              :else (range (* -1 (/ goal 2)) (/ goal 2))))
+        mapper            (fn [s]
+                            (let [action  (rand-nth (possible-actions s))]
+                              {:old-state s
+                               :action    action 
+                               :reward    (reward (+ s action))
+                               :new-state (+ s action)}))
+
+        training-data     (loop [samples  [(mapper 0)]]
+                            (-> samples last :new-state)
+                            (if (or (= (count samples) 100)
+                                    (=  (-> samples last :new-state) goal))
+                              samples
+                              (recur (conj samples
+                                           (mapper (:new-state (last samples)))))))
+
+
+        features          [(fn [[s a]] s)
+                           (fn [[s a]] a)
+                           (fn [[s a]] (- goal s))
+                           (fn [[s a]] (if (pos? s) 1 0)) ]
+        f-c               (count features)
+        init-weights      (repeat f-c (/ 1 f-c))]
+    
+    (testing "Testing addition"
+      (let [start-params      (initial-params features
+                                              training-data
+                                              possible-actions
+                                              discount
+                                              init-weights)]
+        (is (matrix? (:a start-params)))
+        (is (vec?    (:b start-params)))
+        (is (vec?    (:w start-params)))))
+
+   (testing "Solve weights"
+      (let [w   (solve-weights features
+                               training-data
+                               (policy-action features
+                                              init-weights
+                                              possible-actions)
+                               discount)]
+        (println "w" w)
+        (is (vec? w))))))
+
+
 
 
 
