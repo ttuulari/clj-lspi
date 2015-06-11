@@ -104,37 +104,9 @@
           sorted                (sort-by first > values)]
       (-> sorted first second))))
 
-(defn initial-params
-  [features training-data possible-actions discount init-weights]
-  (let [{:keys [a b]}  (a-and-b features
-                                training-data
-                                (policy-action features
-                                               init-weights
-                                               possible-actions)
-                                discount)]
-     {:a a
-      :b b
-      :w init-weights}))
-
-#_(defn algo
+#_(defn fixed-data-solve
   [features training-data possible-actions discount init-weights stopping-criterion]
-  (let [{:keys [a b w]}  (initial-params features
-                                         training-data
-                                         possible-actions
-                                         discount
-                                         init-weights)]
-    (loop [a-mat   a
-           b-vec   b
-           w-vec   w]
-      (let [new-w   (weights a-mat b-vec)]
-        (if (< (distance w-vec new-w) stopping-criterion)
-          new-w
-          (recur (update-a a-mat
-                           features
-                           (policy-action features
-                                          weights
-                                          possible-actions)
-                           discount
-                           sample)
-                 (update-b b-vec features sample)
-                 (weights a-mat b-vec)))))))
+ 
+
+
+  )
