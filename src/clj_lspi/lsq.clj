@@ -104,9 +104,3 @@
           sorted                (sort-by first > values)]
       (-> sorted first second))))
 
-#_(defn fixed-data-solve
-  [features training-data possible-actions discount init-weights stopping-criterion]
- 
-
-
-  )
