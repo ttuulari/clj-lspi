@@ -72,6 +72,7 @@
       (is (= (-> sorted first first) 
              best)))))
 
+;;;;;;;;;;;; Tests for learning to do addition ;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def goal              50)
 (def discount          0.9)
@@ -124,4 +125,22 @@
                                             possible-actions)
                              discount)]
       (is (vec? w)))))
+
+(deftest weights-test-2
+  (testing "Solve weights twice"
+    (let [w   (solve-weights features
+                             training-data
+                             (policy-action features
+                                            init-weights
+                                            possible-actions)
+                             discount)
+          w2  (solve-weights features
+                             training-data
+                             (policy-action features
+                                            w
+                                            possible-actions)
+                             discount)]
+      (is (vec? w))
+      (is (vec? w2))
+      (is (zero? (distance w w2))))))
 
