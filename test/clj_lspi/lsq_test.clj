@@ -1,5 +1,5 @@
 (ns clj_lspi.lsq-test
-;  (:refer-clojure :exclude [* - + == /])
+  (:refer-clojure :exclude [* - + == /])
   (:require
     [clojure.test :refer [deftest testing is]]
     [clojure.core.matrix :refer :all]
@@ -101,7 +101,7 @@
         features          [(fn [[s a]] s)
                            (fn [[s a]] a)
                            (fn [[s a]] (- goal s))
-                           (fn [[s a]] (if (pos? s) 1 0)) ]
+                           (fn [[s a]] (if (pos? s) 1 0))]
         f-c               (count features)
         init-weights      (repeat f-c (/ 1 f-c))]
     
