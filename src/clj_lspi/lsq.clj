@@ -87,11 +87,11 @@
          (+ b-vec))))
 
 (defn policy-action
-  "Pick the actions among (possible actions) that maximizes the state argument Q-value.
+  "Pick the action among (possible actions) that maximizes the state argument Q-value.
   Return policy fn"
-  [features weights possible-actions]
+  [features weights possible-actions-fn]
   (fn [state]
-    (let [actions               (possible-actions state)
+    (let [actions               (possible-actions-fn state)
           state-action-data     (map (fn [action] 
                                        {:old-state state
                                         :action action})
