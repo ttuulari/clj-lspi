@@ -95,8 +95,7 @@
                         (fn [[s a]] (- goal s))
                         (fn [[s a]] (if (pos? s) 1 0))
                         (fn [[s a]] (if (pos? (- goal s)) 1 0))])
-(def f-c               (count features))
-(def init-weights      (repeat f-c 0))
+(def init-weights      (repeat (count features) 0))
 (def training-data   (trajectory 100
                                  features
                                  init-weights
@@ -127,4 +126,20 @@
                              discount)]
       (is (vec? w)))))
 
+(deftest a-update
+  (testing "Update A matrix"
+    (let [a-result (loop [A      (zero-matrix (count features)
+                                              (count features))
+                          data   training-data]
+                     (if (zero? (count data))
+                       A
+                       (recur (update-a A
+                                        features
+                                        (policy-action features
+                                                       init-weights
+                                                       possible-actions)
+                                        discount
+                                        (first data))
+                              (rest data))))]
+      (is (matrix? a-result)))))
 
