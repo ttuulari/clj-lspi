@@ -76,34 +76,35 @@
 
 (def goal              50)
 (def discount          0.9)
-(def reward            (fn [s]
-                            (/ 1 (+ 0.01 (Math/abs (- goal s))))))
-(def starting-states   (range 0 (* goal 2)))
-(def possible-actions  (fn [s]
-                            (cond
-                              (= goal s) [0 1 -1]
-                              :else (range (* -1 (/ goal 2)) (/ goal 2)))))
-(def mapper            (fn [s]
-                            (let [action  (rand-nth (possible-actions s))]
-                              {:old-state s
-                               :action    action 
-                               :reward    (reward (+ s action))
-                               :new-state (+ s action)})))
+(defn reward
+  [state _action]
+  (/ 1 (+ 0.01 (Math/abs (- goal state)))))
 
-(def training-data     (loop [samples  [(mapper 0)]]
-                            (-> samples last :new-state)
-                            (if (or (= (count samples) 100)
-                                    (=  (-> samples last :new-state) goal))
-                              samples
-                              (recur (conj samples
-                                           (mapper (:new-state (last samples))))))))
+(defn possible-actions
+  [state]
+  (cond
+    (= goal state) [0 1 -1]
+    :else (range (* -1 (/ goal 2)) (/ goal 2))))
+
+(defn transition-fn
+  [state action]
+  (+ state action))
 
 (def features          [(fn [[s a]] s)
                         (fn [[s a]] a)
                         (fn [[s a]] (- goal s))
-                        (fn [[s a]] (if (pos? s) 1 0))])
+                        (fn [[s a]] (if (pos? s) 1 0))
+                        (fn [[s a]] (if (pos? (- goal s)) 1 0))])
 (def f-c               (count features))
-(def init-weights      (repeat f-c (/ 1 f-c)))
+(def init-weights      (repeat f-c 0))
+(def training-data   (trajectory 100
+                                 features
+                                 init-weights
+                                 goal
+                                 reward
+                                 possible-actions
+                                 transition-fn
+                                 (rand-int 100)))
 
 (deftest addition-test
   (testing "Testing addition"
@@ -126,21 +127,4 @@
                              discount)]
       (is (vec? w)))))
 
-(deftest weights-test-2
-  (testing "Solve weights twice"
-    (let [w   (solve-weights features
-                             training-data
-                             (policy-action features
-                                            init-weights
-                                            possible-actions)
-                             discount)
-          w2  (solve-weights features
-                             training-data
-                             (policy-action features
-                                            w
-                                            possible-actions)
-                             discount)]
-      (is (vec? w))
-      (is (vec? w2))
-      (is (zero? (distance w w2))))))
 
