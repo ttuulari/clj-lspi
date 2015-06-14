@@ -104,3 +104,42 @@
           sorted                (sort-by first > values)]
       (-> sorted first second))))
 
+(defn transition
+  "Generate a data point by making a state transition."
+  [features weights reward-fn possible-actions-fn transition-fn state]
+  (let [action     ((policy-action features
+                                   weights
+                                   possible-actions-fn) state)
+        new-state  (transition-fn state action)]
+    {:old-state state
+     :action    action
+     :reward    (reward-fn new-state action)
+     :new-state new-state}))
+
+(defn trajectory
+  "Generate a trajectory by following a policy defined by weights."
+  [max-length
+   features
+   weights
+   goal-state
+   reward-fn
+   possible-actions-fn
+   transition-fn
+   initial-state]
+  (let [termination?  (fn [samples]
+                        (or (= (count samples) max-length)
+                            (= (-> samples last :new-state) goal-state)))
+
+        trans-fn      (partial transition
+                               features
+                               weights
+                               reward-fn
+                               possible-actions-fn
+                               transition-fn)]
+    (loop [samples  [(trans-fn initial-state)]]
+      (if (termination? samples)
+        samples
+        (recur (conj samples
+                     (trans-fn (-> samples
+                                   last
+                                   :new-state))))))))
