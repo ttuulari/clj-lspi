@@ -93,15 +93,19 @@
 (def features          [(fn [[s a]] s)
                         (fn [[s a]] a)
                         (fn [[s a]] (- goal s))
-                        (fn [[s a]] (if (pos? s) 1 0))
-                        (fn [[s a]] (if (pos? (- goal s)) 1 0))])
-(def init-weights      (repeat (count features) 0))
+                        (fn [[s a]] (if (pos? s) 1 -1))
+                        (fn [[s a]] (if (pos? (- goal s)) 1 -1))])
+
+(def init-weights    (repeat (count features) 0))
+
+(defn random-policy
+  [state]
+  (rand-nth (possible-actions state)))
+
 (def training-data   (trajectory 100
-                                 features
-                                 init-weights
                                  goal
-                                 reward
-                                 possible-actions
+                                 random-policy
+                                 reward 
                                  transition-fn
                                  (rand-int 100)))
 
@@ -142,4 +146,5 @@
                                         (first data))
                               (rest data))))]
       (is (matrix? a-result)))))
+
 

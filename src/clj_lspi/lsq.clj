@@ -106,10 +106,8 @@
 
 (defn transition
   "Generate a data point by making a state transition."
-  [features weights reward-fn possible-actions-fn transition-fn state]
-  (let [action     ((policy-action features
-                                   weights
-                                   possible-actions-fn) state)
+  [policy-fn reward-fn transition-fn state]
+  (let [action     (policy-fn state)
         new-state  (transition-fn state action)]
     {:old-state state
      :action    action
@@ -119,11 +117,9 @@
 (defn trajectory
   "Generate a trajectory by following a policy defined by weights."
   [max-length
-   features
-   weights
    goal-state
+   policy-fn
    reward-fn
-   possible-actions-fn
    transition-fn
    initial-state]
   (let [termination?  (fn [samples]
@@ -131,10 +127,8 @@
                             (= (-> samples last :new-state) goal-state)))
 
         trans-fn      (partial transition
-                               features
-                               weights
+                               policy-fn
                                reward-fn
-                               possible-actions-fn
                                transition-fn)]
     (loop [samples  [(trans-fn initial-state)]]
       (if (termination? samples)
