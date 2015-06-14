@@ -102,12 +102,16 @@
   [state]
   (rand-nth (possible-actions state)))
 
-(def training-data   (trajectory 100
-                                 goal
-                                 random-policy
-                                 reward 
-                                 transition-fn
-                                 (rand-int 100)))
+(defn random-training-data
+  [length]
+  (trajectory length
+              goal
+              random-policy
+              reward 
+              transition-fn
+              (rand-int 100)))
+
+(def training-data (mapcat random-training-data (repeat 5 100)))
 
 (deftest addition-test
   (testing "Testing addition"

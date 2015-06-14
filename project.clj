@@ -9,7 +9,7 @@
 
   :main ^:skip-aot clj-lspi.core 
   :target-path "target/%s"
+  :source-paths ["src"] 
   :profiles {:uberjar {:aot :all}
              :dev {:plugins [[com.jakemccrary/lein-test-refresh "0.9.0"]
-                             [lein-cloverage "1.0.6"]
-                             [lein-kibit "0.1.2"]]}})
+                             [lein-cloverage "1.0.6"]]}})
