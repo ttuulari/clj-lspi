@@ -31,7 +31,7 @@
       matrix
       transpose))
 
-(defn- weights
+(defn weights
   "Solve weight vector by inversing A."
   [A b]
   (mmul (inverse A) b))
@@ -99,7 +99,7 @@
           feature-values        (feature-matrix features state-action-data)
           mult-with-weights     (fn [feat-val]
                                   (mmul feat-val weights))
-          scores                (map mult-with-weights feature-values)
+          scores                (pmap mult-with-weights feature-values)
           values                (map vector scores actions)
           sorted                (sort-by first > values)]
       (-> sorted first second))))
@@ -137,3 +137,25 @@
                      (trans-fn (-> samples
                                    last
                                    :new-state))))))))
+
+(defn iterate-a-and-b
+  [training-data features weights discount possible-actions-fn]
+  (loop [A      (zero-matrix (count features)
+                             (count features))
+         b      (zero-vector (count features))
+         data   training-data]
+    (if (zero? (count data))
+      [A b]
+      (recur (update-a A
+                       features
+                       (policy-action features
+                                      weights
+                                      possible-actions-fn)
+                       discount
+                       (first data))
+             (update-b b
+                       features
+                       (first data))
+             (rest data)))))
+
+
