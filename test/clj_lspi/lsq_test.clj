@@ -74,16 +74,16 @@
 
 ;;;;;;;;;;;; Tests for learning to do addition ;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def goal              50)
+(def goal              10)
 (def discount          0.9)
 (defn reward
   [state _action]
-  (/ 1 (+ 0.01 (Math/abs (- goal state)))))
+  (/ 10 (+ 0.01 (Math/abs (- goal state)))))
 
 (defn possible-actions
   [state]
   (cond
-    (= goal state) [0 1 -1]
+    (= goal state) [0]
     :else (range (* -1 (/ goal 2)) (/ goal 2))))
 
 (defn transition-fn
@@ -92,9 +92,7 @@
 
 (def features          [(fn [[s a]] s)
                         (fn [[s a]] a)
-                        (fn [[s a]] (- goal s))
-                        (fn [[s a]] (if (pos? s) 1 -1))
-                        (fn [[s a]] (if (pos? (- goal s)) 1 -1))])
+                        (fn [[s a]] (- goal s))])
 
 (def init-weights    (repeat (count features) 0))
 
@@ -111,7 +109,8 @@
               transition-fn
               (rand-int 100)))
 
-(def training-data (mapcat random-training-data (repeat 5 100)))
+(def training-data (apply concat (pmap random-training-data (repeat 200 20))))
+(println training-data)
 
 (deftest addition-test
   (testing "Testing addition"
@@ -151,4 +150,20 @@
                               (rest data))))]
       (is (matrix? a-result)))))
 
+(deftest iterate-ab
+  (testing "a and b update iteration"
+    (let [[a b]  (iterate-a-and-b training-data features init-weights discount possible-actions)]
+      (is (vec? b))
+      (is matrix? a))))
+
+(deftest iterate-w
+  (testing "Iterate weights"
+    (loop [counter  0
+           w        init-weights]
+      (println "w" w)
+      (let [[a b]   (iterate-a-and-b training-data features w discount possible-actions)
+            new-w   (weights a b)]
+        (if (< counter 5)
+          (recur (inc counter) new-w)
+          new-w)))))
 
