@@ -82,9 +82,9 @@
                                  (:action elem)])
         feature-data          (extract-feature-data sample)
         feature-values        ((apply juxt features) feature-data)]
-    (->> feature-values
-         (* (:reward sample))
-         (+ b-vec))))
+    (+ (* (:reward sample)
+          feature-values)
+       b-vec)))
 
 (defn policy-action
   "Pick the action among (possible actions) that maximizes the state argument Q-value.
