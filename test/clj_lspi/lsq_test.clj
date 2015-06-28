@@ -75,10 +75,10 @@
 ;;;;;;;;;;;; Tests for learning to do addition ;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def goal              10)
-(def discount          0.9)
+(def discount          0.99)
 (defn reward
   [state _action]
-  (/ 10 (+ 0.01 (Math/abs (- goal state)))))
+  (/ 1 (+ 0.01 (Math/abs (- goal state)))))
 
 (defn possible-actions
   [state]
@@ -92,7 +92,9 @@
 
 (def features          [(fn [[s a]] s)
                         (fn [[s a]] a)
-                        (fn [[s a]] (- goal s))])
+                        (fn [[s a]] (- goal s))
+                        (fn [[s a]] (if (pos? s) 1 0))
+                        (fn [[s a]] (if (pos? (- goal s)) 1 0))])
 
 (def init-weights    (repeat (count features) 0))
 
@@ -107,10 +109,9 @@
               random-policy
               reward 
               transition-fn
-              (rand-int 100)))
+              (rand-int 20)))
 
-(def training-data (apply concat (pmap random-training-data (repeat 200 20))))
-(println training-data)
+(def training-data (apply concat (pmap random-training-data (repeat 300 10))))
 
 (deftest addition-test
   (testing "Testing addition"
@@ -156,14 +157,36 @@
       (is (vec? b))
       (is matrix? a))))
 
+(deftest iterate-w-vs-direct
+  (testing "Iterate weights and direct solve return the same weight vector."
+     (let [[a b]     (iterate-a-and-b training-data features init-weights discount possible-actions)
+            iter-w   (weights a b)
+            direct-w (solve-weights features
+                                    training-data
+                                    (policy-action features
+                                                   init-weights
+                                                   possible-actions)
+                                    discount)
+            dist     (distance iter-w direct-w)]
+       (println "iter-w" iter-w)
+       (is (= dist 0.0)))))
+
 (deftest iterate-w
   (testing "Iterate weights"
     (loop [counter  0
-           w        init-weights]
+           w        init-weights
+           data     training-data]
       (println "w" w)
-      (let [[a b]   (iterate-a-and-b training-data features w discount possible-actions)
-            new-w   (weights a b)]
-        (if (< counter 5)
-          (recur (inc counter) new-w)
+
+      (let [[a b]          (iterate-a-and-b data features w discount possible-actions)
+            new-w          (weights a b)
+            new-trajectory (trajectory 10 
+                                       goal
+                                       random-policy
+                                       reward 
+                                       transition-fn
+                                       (rand-int 20))]
+        (if (< counter 10)
+          (recur (inc counter) new-w (concat data new-trajectory))
           new-w)))))
 
