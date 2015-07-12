@@ -16,10 +16,10 @@
 
 (defn feature-transition-matrix
   "Approximate feature transition matrix based on policy fn"
-  [features training-data policy]
+  [features training-data policy-fn]
   (let [extract-feature-data (fn [elem]
                                [(:new-state elem)
-                                (policy (:new-state elem))])
+                                (policy-fn (:new-state elem))])
         feature-data         (map extract-feature-data training-data)
         mapper               (apply juxt features)]
     (matrix (map mapper feature-data))))
@@ -37,9 +37,9 @@
   (mmul (inverse A) b))
 
 (defn a-and-b
-  [features training-data policy discount]
+  [features training-data policy-fn discount]
   (let [phi     (feature-matrix features training-data)
-        p-phi   (feature-transition-matrix features training-data policy)
+        p-phi   (feature-transition-matrix features training-data policy-fn)
         phi-t   (transpose phi)
         b       (mmul phi-t 
                       (extract-rewards training-data))
