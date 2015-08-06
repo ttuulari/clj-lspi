@@ -58,14 +58,8 @@
 (defn update-a
   "Update a-matrix with new data sample"
   [a-matrix features policy discount sample]
-  (let [extract-feature-data  (fn [elem]
-                                [(:old-state elem)
-                                 (:action elem)])
-        extract-policy-data   (fn [elem]
-                                [(:new-state elem)
-                                 (policy (:new-state elem))])
-        feature-data          (extract-feature-data sample)
-        feature-policy-data   (extract-policy-data sample)
+  (let [feature-data          [(:old-state sample) (:action sample)]
+        feature-policy-data   [(:new-state sample) (policy (:new-state sample))]
         feature-values        ((apply juxt features) feature-data)
         feature-policy-values ((apply juxt features) feature-policy-data)
         delta                 (->> feature-policy-values
@@ -77,10 +71,7 @@
 (defn update-b
   "Update b-vector with new data sample"
   [b-vec features sample]
-  (let [extract-feature-data  (fn [elem]
-                                [(:old-state elem)
-                                 (:action elem)])
-        feature-data          (extract-feature-data sample)
+  (let [feature-data          [(:old-state sample) (:action sample)]
         feature-values        ((apply juxt features) feature-data)]
     (+ (* (:reward sample)
           feature-values)
