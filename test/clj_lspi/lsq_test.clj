@@ -84,17 +84,15 @@
   [state]
   (cond
     (= goal state) [0]
-    :else (range (* -1 (/ goal 2)) (/ goal 2))))
+    :else [-5 -4 -3 -2 -1 1 2 3 4 5]))
 
 (defn transition-fn
   [state action]
   (+ state action))
 
-(def features          [(fn [[s a]] s)
-                        (fn [[s a]] a)
-                        (fn [[s a]] (- goal s))
-                        (fn [[s a]] (if (pos? s) 1 0))
-                        (fn [[s a]] (if (pos? (- goal s)) 1 0))])
+(def features          [(fn [[s a]] (Math/abs (- goal (+ s a))))
+                        (fn [[s a]] (- goal (+ s a)))
+                        (fn [[s a]] (if (pos? (- goal (+ s a))) 1 -1))])
 
 (def init-weights    (repeat (count features) 0))
 
@@ -111,7 +109,7 @@
               transition-fn
               (rand-int 20)))
 
-(def training-data (apply concat (pmap random-training-data (repeat 300 10))))
+(def training-data (apply concat (pmap random-training-data (repeat 300 20))))
 
 (deftest addition-test
   (testing "Testing addition"
@@ -168,7 +166,7 @@
                                                    possible-actions)
                                     discount)
             dist     (distance iter-w direct-w)]
-       (println "iter-w" iter-w)
+       (println "direct w" direct-w)
        (is (= dist 0.0)))))
 
 (deftest iterate-w
@@ -182,7 +180,9 @@
             new-w          (weights a b)
             new-trajectory (trajectory 10 
                                        goal
-                                       random-policy
+                                       (policy-action features
+                                                      init-weights
+                                                      possible-actions)
                                        reward 
                                        transition-fn
                                        (rand-int 20))]
