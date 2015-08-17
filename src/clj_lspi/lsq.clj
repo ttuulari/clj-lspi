@@ -130,23 +130,32 @@
                                    :new-state))))))))
 
 (defn iterate-a-and-b
-  [training-data features weights discount possible-actions-fn]
-  (loop [A      (zero-matrix (count features)
-                             (count features))
-         b      (zero-vector (count features))
-         data   training-data]
-    (if (zero? (count data))
-      [A b]
-      (recur (update-a A
-                       features
-                       (policy-action features
-                                      weights
-                                      possible-actions-fn)
-                       discount
-                       (first data))
-             (update-b b
-                       features
-                       (first data))
-             (rest data)))))
+  "Update A-matrix and b-vector with training data."
+  ([training-data features weights discount possible-actions-fn]
+   (iterate-a-and-b (zero-matrix (count features)
+                                 (count features))
+                    (zero-vector (count features))
+                    training-data features weights discount possible-actions-fn))
+  ([a-matrix b-vector training-data features weights discount possible-actions-fn]
+   (loop [A      a-matrix
+          b      b-vector
+          data   training-data]
+     (if (zero? (count data))
+       [A b]
+       (recur (update-a A
+                        features
+                        (policy-action features
+                                       weights
+                                       possible-actions-fn)
+                        discount
+                        (first data))
+              (update-b b
+                        features
+                        (first data))
+              (rest data))))))
 
-
+(defn policy
+  "Return a policy function state -> action"
+  [features weights possible-actions]
+  (fn [state]
+    ((policy-action features weights possible-actions) state)))
