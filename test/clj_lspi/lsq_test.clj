@@ -166,27 +166,48 @@
                                                    possible-actions)
                                     discount)
             dist     (distance iter-w direct-w)]
-       (println "direct w" direct-w)
        (is (= dist 0.0)))))
 
-(deftest iterate-w
-  (testing "Iterate weights"
-    (loop [counter  0
-           w        init-weights
-           data     training-data]
-      (println "w" w)
+(deftest iterate-a-b-explore
+  (testing "Iterate A and b and explore new states."
+    (let [direct-w       (solve-weights features
+                                        training-data
+                                        (policy-action features
+                                                       init-weights
+                                                       possible-actions)
+                                        discount)
+          {:keys [a b]}  (a-and-b features
+                                  training-data
+                                  (policy-action features
+                                                 init-weights 
+                                                 possible-actions)
+                                  discount)
 
-      (let [[a b]          (iterate-a-and-b data features w discount possible-actions)
-            new-w          (weights a b)
-            new-trajectory (trajectory 10 
-                                       goal
-                                       (policy-action features
-                                                      init-weights
-                                                      possible-actions)
-                                       reward 
-                                       transition-fn
-                                       (rand-int 20))]
-        (if (< counter 10)
-          (recur (inc counter) new-w (concat data new-trajectory))
-          new-w)))))
+          w-result        (loop [counter       0
+                                 [a-mat b-vec] [a b]
+                                 data          training-data]
+                            (let [new-w          (weights a b)
+                                  [a b]          (iterate-a-and-b a-mat
+                                                                  b-vec
+                                                                  data
+                                                                  features
+                                                                  new-w
+                                                                  discount
+                                                                  possible-actions)
+                                  new-trajectory (trajectory 20
+                                                             goal
+                                                             (policy-action features
+                                                                            new-w
+                                                                            possible-actions)
+                                                             reward 
+                                                             transition-fn
+                                                             (rand-int 20))]
+                              (if (< counter 10)
+                                (recur (inc counter)
+                                       [a b]
+                                       new-trajectory)
+                                new-w)))]
+
+      (is (< (distance w-result direct-w)
+             0.1)))))
 
