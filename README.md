@@ -2,6 +2,8 @@
 
 A Clojure library designed to ... well, try out model-free reinforcement learning  
 
+[![Circle CI](https://circleci.com/gh/ttuulari/clj-lspi.svg?style=svg)](https://circleci.com/gh/ttuulari/clj-lspi)
+
 ## Usage
 
 # Run tests
